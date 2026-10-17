@@ -19,3 +19,5 @@ html{scroll-padding-top:20px}body{overflow-wrap:break-word}.brand{flex-shrink:0}
 @media(max-width:360px){main{padding-inline:12px}aside{padding-inline:12px}.panel{padding:16px}nav a{font-size:10px}.scene-label>span:last-child{display:none}}
 @media(max-height:600px) and (min-width:1001px){aside{padding-block:18px}nav{margin-top:24px;gap:5px}.aside-note{display:none}}
 @media(max-width:760px){aside nav{grid-template-columns:repeat(3,minmax(0,1fr))}nav a{white-space:nowrap;font-size:12px;min-height:44px}.heading{padding-top:20px}}
+/* Keep all three desktop columns on the same top and bottom edges. */
+@media(min-width:1900px){.planner{align-items:stretch}.visual-stack{align-items:stretch}.visual-stack .scene{height:auto;min-height:520px}.visual-stack .weather-view:not(.expanded){display:flex;flex-direction:column}.visual-stack .weather-view:not(.expanded) .map-stage{flex:1 0 360px;height:auto;min-height:360px}.visual-stack .weather-view:not(.expanded) .map-stage iframe{position:absolute;inset:0;width:100%;height:100%}.visual-stack .weather-view:not(.expanded)>*{flex-shrink:0}}
