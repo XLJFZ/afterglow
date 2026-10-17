@@ -1,0 +1,13 @@
+const test=require('node:test');const assert=require('node:assert/strict');const E=require('../web/engine.js');
+const row={cloud_cover_low:10,cloud_cover_mid:40,cloud_cover_high:60,visibility:20000,precipitation:0};
+function result(id,score,weight,extra={}){return {id,name:id,score,requestedWeight:weight,dimensions:E.score(row,[row],0).dimensions,weather:row,samples:[{distance:0,row},{distance:30,row}],timeline:[{...row,time:'2026-10-17T10:00:00Z'}],complete:1,spatialCoverage:1,...extra};}
+test('weighted scores normalize arbitrary totals',()=>{const d=E.aggregate([result('a',20,2),result('b',80,1)],3);assert.equal(d.score,40);assert.equal(d.spread,60);assert.equal(d.members[0].effectiveWeight,2/3*100);});
+test('failed member gets zero effective weight and lowers coverage',()=>{const d=E.aggregate([result('a',80,40),{id:'b',name:'b',error:'offline',requestedWeight:60}],100);assert.equal(d.score,80);assert.equal(d.coverage,.4);assert.equal(d.members[1].effectiveWeight,0);assert.equal(d.spread,null);});
+test('all failed or zero weights cannot fabricate a result',()=>{assert.throws(()=>E.aggregate([{name:'offline',error:'offline',requestedWeight:100}],100));assert.equal(E.weighted([{value:10,weight:0}]),null);});
+test('missing visibility excludes only that field and reports its coverage',()=>{const a=result('a',80,40);const b=result('b',60,60,{weather:{...row,visibility:null}});b.dimensions[3]={...b.dimensions[3],value:null};const d=E.aggregate([a,b],100);assert.equal(d.weather.visibility,20000);assert.equal(d.dimensions[3].coverage,.4);assert.equal(d.score,68);});
+test('cloud obstruction reduces potential',()=>{assert.ok(E.score(row,[row],0).score>E.score(row,[{...row,cloud_cover_low:100}],0).score);});
+test('solar equinox and polar day',()=>{const a=E.astronomy('2026-03-20',0,0,0);assert.ok(Math.abs(a.azimuth-270)<2);assert.match(a.sunset,/T18:/);assert.equal(E.astronomy('2026-06-21',89,0,0).sunset,undefined);});
+test('date-zone output includes proper fractional offset',()=>{const a=E.astronomy('2026-10-17',27.7,85.3,5.75);assert.ok(a.sunset.endsWith('+05:45'));});
+test('old or sparse weather is rejected',()=>{assert.throws(()=>E.nearest([{time:'2026-10-17T00:00Z'}],Date.parse('2026-10-20T00:00Z')));});
+test('zero and invalid fusion weights fail before network request',async()=>{const base={lat:24.48,lon:118.08,date:'2026-10-17',offset:8,provider:'blend'};await assert.rejects(E.forecast({...base,weights:{gfs:0,icon:0,met:0}}),/权重/);await assert.rejects(E.forecast({...base,weights:{gfs:-1,icon:30,met:30}}),/权重/);});
+test('missing layers fail rather than counting as clear sky',()=>{assert.throws(()=>E.score({...row,cloud_cover_high:null},[row],0),/分层云量/);});
