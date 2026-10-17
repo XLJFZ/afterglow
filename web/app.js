@@ -64,3 +64,16 @@ $('model').addEventListener('change',invalidatePrediction);
 updateWeightSummary();
 
 function renderBeauty(b){$('beautyPanel').hidden=!b;if(!b)return;$('beautyScore').textContent=b.score;$('beautyVerdict').textContent=b.score>=70?'观赏潜力较高':b.score>=40?'有局部看点的可能':'大片火烧云的观赏潜力偏低';$('beautyDimensions').replaceChildren();for(const d of b.dimensions){const line=document.createElement('div');line.className='dimension';line.textContent=d.name;const value=document.createElement('span');value.textContent=(d.value??'缺失')+' / '+d.weight+'% 权重';const track=document.createElement('div');track.className='track';const fill=document.createElement('div');fill.style.width=(d.value??0)+'%';track.append(fill);line.append(value,track);$('beautyDimensions').append(line);}$('beautyNotes').replaceChildren(...b.notes.map(text=>{const p=document.createElement('p');p.textContent=text;return p;}));}
+
+// Accept a shared plan from the main photography planner; never query weather automatically.
+const planParams=new URLSearchParams(location.search);
+if(planParams.has('lat')&&planParams.has('lon')){
+ const pLat=Number(planParams.get('lat')),pLon=Number(planParams.get('lon'));
+ if(Number.isFinite(pLat)&&Number.isFinite(pLon)&&Math.abs(pLat)<=90&&Math.abs(pLon)<=180){
+  $('lat').value=pLat;$('lon').value=pLon;selectedLocationName='光线规划器传入机位';
+  const pDate=planParams.get('date');if(pDate&&/^\d{4}-\d{2}-\d{2}$/.test(pDate)&&Number.isFinite(Date.parse(pDate)))$('date').value=pDate;
+  const pOffset=Number(planParams.get('offset'));if(planParams.has('offset')&&Number.isFinite(pOffset)&&pOffset>=-12&&pOffset<=14)$('offset').value=pOffset;
+  const pBearing=Number(planParams.get('bearing'));if(planParams.has('bearing')&&planParams.get('bearing')!=='unknown'&&Number.isFinite(pBearing)&&pBearing>=0&&pBearing<=360){$('bearingMode').value='known';$('bearing').value=pBearing;syncBearing();$('bearing').oninput();}
+  invalidatePrediction();updateMap();$('status').textContent='已导入光线规划器的机位与日期。点击开始预测，或生成区域图。';
+ }
+}
