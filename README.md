@@ -32,3 +32,7 @@ MET Norway 是区域/全球混合预报产品，不能等同于单一天气模�
 `node --test tests/engine.test.cjs` 验证静态引擎，`python -m unittest discover -s tests -v` 验证保留的 Python 原型。前端语法使用 `node --check web/app.js`。
 
 推送到 main 后，GitHub Actions 运行引擎测试，将 `web/` 部署到 GitHub Pages。工作流：`.github/workflows/pages.yml`。
+
+## 整合方向
+
+现有光线规划器位于 https://xljfz.github.io/tools/light-planner/ ，其源码属于 XLJFZ.github.io 仓库。已核对它使用 MapLibre、SunCalc、相机/主体坐标、太阳月亮方位、焦段与视角计算、导出卡片。建议将本项目 engine.js 的天气适配与综合评分作为独立模块接入该工具，共用地点、日期、时区与相机至主体方位。当前未修改原网站，也未宣称已完成跨站参数同步。

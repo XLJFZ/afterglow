@@ -5,3 +5,5 @@ update_*.py
 prepare_static.py
 .env
 .env.*
+normalize_times.py
+smoke.cjs
