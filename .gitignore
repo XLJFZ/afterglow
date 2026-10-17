@@ -7,3 +7,4 @@ prepare_static.py
 .env.*
 normalize_times.py
 smoke.cjs
+integration-site/
